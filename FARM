@@ -1,0 +1,150 @@
+
+local Window = Rayfield:CreateWindow({
+    Name = "BASIC-HUB",
+    Icon = 0,
+    LoadingTitle = "BASIC-HUB",
+    LoadingSubtitle = "by Murder_bestkid",
+    ShowText = "WSP G",
+    Theme = "AmberGlow",
+
+    ToggleUIKeybind = Enum.KeyCode.K,
+
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "$$$Hub"
+    },
+
+    Discord = {
+        Enabled = true,
+        Invite = "https://discord.gg/GvMehXZN6B",
+        RememberJoins = true
+    },
+
+    KeySystem = false,
+    KeySettings = {
+        Title = "Cobra Karate",
+        Subtitle = "Key System",
+        Note = "If you dont have the key, You should not have the script.",
+        FileName = "KarateKey",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {
+            "Murder_bestkid$",
+            "$"
+        }
+    }
+})
+
+local PushupFarm = false
+local SitupFarm = false
+local DumbbellFarm = false
+local PunchingBagFarm = false
+
+local FarmTab = Window:CreateTab("$Farming$", 4483362458)
+FarmTab:CreateSection("$Workouts$")
+
+-- PUSHUPS --
+FarmTab:CreateToggle({
+    Name = "Autofarm PushUps",
+    Callback = function(Value)
+        PushupFarm = Value
+        task.spawn(function()
+            while PushupFarm do
+                game:GetService("ReplicatedStorage").Remotes.Equipment:FireServer(
+                    "Workout",
+                    {State="Automatic", Name="PushUp", Action="inf"}
+                )
+                task.wait(0.05)
+            end
+        end)
+    end
+})
+
+-- SITUPS --
+FarmTab:CreateToggle({
+    Name = "Autofarm SitUps",
+    Callback = function(Value)
+        SitupFarm = Value
+        task.spawn(function()
+            while SitupFarm do
+                game:GetService("ReplicatedStorage").Remotes.Equipment:FireServer(
+                    "Workout",
+                    {State="Manual", Name="SitUp", Action="inf"}
+                )
+                task.wait(0.05)
+            end
+        end)
+    end
+})
+
+-- DUMBBELLS --
+FarmTab:CreateToggle({
+    Name = "Autofarm Dumbbells (Gamepass)",
+    Callback = function(Value)
+        DumbbellFarm = Value
+        task.spawn(function()
+            while DumbbellFarm do
+                game:GetService("ReplicatedStorage").Remotes.Equipment:FireServer(
+                    "Workout",
+                    {State="Manual", Name="Dumbbell", Action="OneBillion"}
+                )
+                task.wait(0.05)
+            end
+        end)
+    end
+})
+
+-- PUNCHING BAG FARM
+FarmTab:CreateToggle({
+    Name = "Autofarm PunchingBag",
+    Callback = function(Value)
+        PunchingBagFarm = Value
+    end
+})
+
+-- ================= PUNCHING BAG DAMAGE =================
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DamageRemote = ReplicatedStorage:WaitForChild("DamageRemote")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRoot = character:WaitForChild("HumanoidRootPart")
+
+local function getPunchingBag()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj.Name == "PunchingBag" then
+            local bagPart = obj:FindFirstChild("Bag", true)
+            local humanoid = obj:FindFirstChildOfClass("Humanoid")
+            if bagPart and humanoid then
+                if (humanoidRoot.Position - bagPart.Position).Magnitude <= 8 then
+                    return humanoid
+                end
+            end
+        end
+        if obj:IsA("BasePart") and obj.Name == "Bag" then
+            local model = obj:FindFirstAncestor("PunchingBag")
+            if model then
+                local humanoid = model:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    if (humanoidRoot.Position - obj.Position).Magnitude <= 8 then
+                        return humanoid
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0)
+        if PunchingBagFarm then
+            local targetHumanoid = getPunchingBag()
+            if targetHumanoid then
+                DamageRemote:FireServer(targetHumanoid, 24328, false)
+            end
+        end
+    end
+end)
